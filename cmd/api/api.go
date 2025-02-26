@@ -48,7 +48,17 @@ func (app *application) mount() chi.Router {
 
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(docsURL)))
-		app.logger.Infof("docsURL: %v", docsURL)
+
+		r.Route("/swift-codes", func(r chi.Router) {
+			r.Post("/", app.createBankHandler)
+
+			r.Route("/{swift-code}", func(r chi.Router) {
+				r.Get("/", app.getBankBySWIFTCodeHandler)
+				r.Delete("/", app.deleteBankHandler)
+			})
+			r.Get("/country/{countryISO2code}", app.getAllBanksByCountryISO2Handler)
+		})
+
 	})
 
 	return r

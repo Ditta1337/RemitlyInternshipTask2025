@@ -11,6 +11,11 @@ type BankStore struct {
 }
 
 func (s *BankStore) Create(ctx context.Context, bank *model.Bank) error {
+	headquarterSwiftCode, err := s.findHeadquarterSwiftCode(ctx, bank.SWIFTCode)
+	if err != nil {
+		return err
+	}
+
 	query := `
 		INSERT INTO banks (swiftCode, address, bankName, countryISO2, countryName, isHeadquarter, headquarterSwiftCode)
 		values ($1, $2, $3, $4, $5, $6, $7)
@@ -19,7 +24,7 @@ func (s *BankStore) Create(ctx context.Context, bank *model.Bank) error {
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	_, err := s.db.ExecContext(
+	_, err = s.db.ExecContext(
 		ctx,
 		query,
 		bank.SWIFTCode,
@@ -28,13 +33,34 @@ func (s *BankStore) Create(ctx context.Context, bank *model.Bank) error {
 		bank.CountryISO2,
 		bank.CountryName,
 		bank.IsHeadquarter,
-		bank.HeadquarterSWIFTCode,
+		headquarterSwiftCode,
 	)
 
 	return err
 }
 
-func (s *BankStore) GetBySWIFTCode(ctx context.Context, swiftCode string) (*[]model.Bank, error) {
+func (s *BankStore) findHeadquarterSwiftCode(ctx context.Context, swiftCode string) (*string, error) {
+	swiftCodeToFind := swiftCode[:8] + "XXX"
+
+	query := `
+		SELECT swiftCode
+		FROM banks
+		WHERE swiftCode = $1
+	`
+
+	var foundSwiftCode string
+	err := s.db.QueryRowContext(ctx, query, swiftCodeToFind).Scan(&foundSwiftCode)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &foundSwiftCode, nil
+}
+
+func (s *BankStore) GetBySWIFTCode(ctx context.Context, swiftCode string) ([]model.Bank, error) {
 	headquarterQuery := `
 		SELECT swiftCode, address, bankName, countryISO2, countryName, isHeadquarter, headquarterSwiftCode 
 		FROM banks
@@ -57,6 +83,9 @@ func (s *BankStore) GetBySWIFTCode(ctx context.Context, swiftCode string) (*[]mo
 		&headquarter.HeadquarterSWIFTCode,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 
@@ -94,14 +123,10 @@ func (s *BankStore) GetBySWIFTCode(ctx context.Context, swiftCode string) (*[]mo
 		return nil, err
 	}
 
-	if len(banks) == 0 {
-		return nil, ErrNotFound
-	}
-
-	return &banks, nil
+	return banks, nil
 }
 
-func (s *BankStore) GetAllByCountryISO2(ctx context.Context, countryISO2 string) (*[]model.Bank, error) {
+func (s *BankStore) GetAllByCountryISO2(ctx context.Context, countryISO2 string) ([]model.Bank, error) {
 	query := `
 		SELECT swiftCode, address, bankName, countryISO2, countryName, isHeadquarter, headquarterSwiftCode 
 		FROM banks
@@ -143,7 +168,7 @@ func (s *BankStore) GetAllByCountryISO2(ctx context.Context, countryISO2 string)
 		return nil, ErrNotFound
 	}
 
-	return &banks, nil
+	return banks, nil
 }
 
 func (s *BankStore) Delete(ctx context.Context, swiftCode string) error {

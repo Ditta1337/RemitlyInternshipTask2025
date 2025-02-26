@@ -16,8 +16,8 @@ var (
 type Storage struct {
 	Banks interface {
 		Create(context.Context, *model.Bank) error
-		GetBySWIFTCode(context.Context, string) (*[]model.Bank, error)
-		GetAllByCountryISO2(context.Context, string) (*[]model.Bank, error)
+		GetBySWIFTCode(context.Context, string) ([]model.Bank, error)
+		GetAllByCountryISO2(context.Context, string) ([]model.Bank, error)
 		Delete(context.Context, string) error
 	}
 }

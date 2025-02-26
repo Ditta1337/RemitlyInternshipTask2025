@@ -8,12 +8,12 @@ CREATE TABLE banks
     countryISO2          varchar(2)   NOT NULL,
     countryName          varchar(255) NOT NULL,
     isHeadquarter        boolean      NOT NULL,
-    headquarterSwiftCode varchar(11),
-    CONSTRAINT fk_headquarter FOREIGN KEY (headquarterSwiftCode) REFERENCES banks(swiftCode) ON DELETE SET NULL
+    headquarterSwiftCode varchar(11)  NULL,
+    CONSTRAINT fk_headquarter FOREIGN KEY (headquarterSwiftCode) REFERENCES banks (swiftCode) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_headquarter ON banks(headquarterSwiftCode);
-CREATE INDEX idx_country ON banks(countryISO2);
+CREATE INDEX idx_headquarter ON banks (headquarterSwiftCode);
+CREATE INDEX idx_country ON banks (countryISO2);
 -- +goose StatementEnd
 
 -- +goose Down

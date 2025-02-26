@@ -10,11 +10,11 @@ func (app *application) internalServerError(w http.ResponseWriter, r *http.Reque
 }
 
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	app.logger.Errorf("bad request response: %s, path: %s, error: %s", r.Method, r.URL.Path, err.Error())
+	app.logger.Warnf("bad request response: %s, path: %s, error: %s", r.Method, r.URL.Path, err.Error())
 	app.writeJSONError(w, http.StatusBadRequest, err.Error())
 }
 
-func (app *application) notFoundStatus(w http.ResponseWriter, r *http.Request, err error) {
-	app.logger.Errorf("not found response: %s, path: %s, error: %s", r.Method, r.URL.Path, err.Error())
-	app.writeJSONError(w, http.StatusNotFound, "resource not found ")
+func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.logger.Warnf("not found response: %s, path: %s, error: %s", r.Method, r.URL.Path, err.Error())
+	app.writeJSONError(w, http.StatusNotFound, "resource not found")
 }
