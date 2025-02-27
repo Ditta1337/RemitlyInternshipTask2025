@@ -125,7 +125,8 @@ Make sure you have Docker installed:
 - `DELETE /v1/swift-codes/{swift-code}`
     - Removes bank from the database
 
-- (ADDITIONAL) `GET /v1/swagger/*`
+#### (ADDITIONAL) Swagger
+- `GET /v1/swagger/*`
     - Swagger documentation for the API
 
 ## Environment variables
