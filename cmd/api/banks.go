@@ -11,6 +11,18 @@ import (
 	"strings"
 )
 
+// CreateBank godoc
+//
+//	@Summary		Creates a bank
+//	@Description	Creates a bank
+//	@Tags			banks
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		requests.BankPayload	true	"Bank payload"
+//	@Success		201		{object}	responses.Message
+//	@Failure		400		{object}	responses.Error
+//	@Failure		500		{object}	responses.Error
+//	@Router			/swift-codes [post]
 func (app *application) createBankHandler(w http.ResponseWriter, r *http.Request) {
 	var payload requests.BankPayload
 	if err := readJSON(w, r, &payload); err != nil {
@@ -55,8 +67,24 @@ func (app *application) createBankHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// GetBankBySWIFTCode godoc
+//
+//	@Summary		Gets a bank by SWIFT code
+//	@Description	Gets a bank by SWIFT code
+//	@Tags			banks
+//	@Accept			json
+//	@Produce		json
+//	@Param			swift-code	path		string		true	"SWIFT Code"
+//	@Success		200			{object}	interface{}	"Returns either a BankHeadquarter or BankBranch. See the API documentation for details."
+//	@Failure		400			{object}	responses.Error
+//	@Failure		404			{object}	responses.Error
+//	@Failure		500			{object}	responses.Error
+//	@Router			/swift-codes/{swift-code} [get]
 func (app *application) getBankBySWIFTCodeHandler(w http.ResponseWriter, r *http.Request) {
-	swiftCode := strings.ToUpper(chi.URLParam(r, "swift-code"))
+	swiftCode, err := parseSwiftCode(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+	}
 
 	ctx := r.Context()
 
@@ -89,10 +117,22 @@ func (app *application) getBankBySWIFTCodeHandler(w http.ResponseWriter, r *http
 	}
 }
 
+// GetAllBanksByCountryISO2Code godoc
+//
+//	@Summary		Gets all banks with given Country ISO2 Code
+//	@Description	Gets all banks with given Country ISO2 Code
+//	@Tags			banks
+//	@Accept			json
+//	@Produce		json
+//	@Param			countryISO2code	path		string	true	"Country ISO2 Code"
+//	@Success		200				{object}	responses.AllBanks
+//	@Failure		400				{object}	responses.Error
+//	@Failure		500				{object}	responses.Error
+//	@Router			/swift-codes/country/{countryISO2code} [get]
 func (app *application) getAllBanksByCountryISO2Handler(w http.ResponseWriter, r *http.Request) {
 	countryISO := strings.ToUpper(chi.URLParam(r, "countryISO2code"))
 	if len(countryISO) != 2 {
-		app.badRequestResponse(w, r, errors.New("incorrect country iso2 code"))
+		app.badRequestResponse(w, r, errors.New("incorrect country ISO2 code length"))
 	}
 
 	ctx := r.Context()
@@ -122,8 +162,23 @@ func (app *application) getAllBanksByCountryISO2Handler(w http.ResponseWriter, r
 	}
 }
 
+// DeleteBank godoc
+//
+//	@Summary		Deletes a bank by SWIFT code
+//	@Description	Deletes a bank by SWIFT code
+//	@Tags			banks
+//	@Accept			json
+//	@Produce		json
+//	@Param			swift-code	path		string	true	"SWIFT Code"
+//	@Success		200			{object}	responses.Message
+//	@Failure		404			{object}	responses.Error
+//	@Failure		500			{object}	responses.Error
+//	@Router			/swift-codes/{swift-code} [delete]
 func (app *application) deleteBankHandler(w http.ResponseWriter, r *http.Request) {
-	swiftCode := strings.ToUpper(chi.URLParam(r, "swift-code"))
+	swiftCode, err := parseSwiftCode(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+	}
 
 	ctx := r.Context()
 
@@ -136,10 +191,19 @@ func (app *application) deleteBankHandler(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	if err := app.writeJSONResponse(w, http.StatusCreated, responses.Message{Message: "successfully deleted bank from database"}); err != nil {
+	if err := app.writeJSONResponse(w, http.StatusOK, responses.Message{Message: "successfully deleted bank from database"}); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
+}
+
+func parseSwiftCode(r *http.Request) (string, error) {
+	swiftCode := strings.ToUpper(chi.URLParam(r, "swift-code"))
+	if len(swiftCode) != 11 {
+		return "", errors.New("incorrect SWIFT code length")
+	}
+
+	return swiftCode, nil
 }
 
 func mapBankToBankHeadquarter(bank model.Bank, branches []model.Bank) responses.BankHeadquarter {

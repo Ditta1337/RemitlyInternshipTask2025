@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/Ditta1337/RemitlyInternshipTask2025/internal/dto/responses"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 )
@@ -29,11 +30,8 @@ func readJSON(w http.ResponseWriter, r *http.Request, data any) error {
 }
 
 func (app *application) writeJSONError(w http.ResponseWriter, status int, message string) {
-	type envelope struct {
-		Error string `json:"error"`
-	}
 
-	if err := writeJSON(w, status, &envelope{Error: message}); err != nil {
+	if err := writeJSON(w, status, &responses.Error{Error: message}); err != nil {
 		app.logger.Errorf("error writing JSOn error: %s", err.Error())
 	}
 }
