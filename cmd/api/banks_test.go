@@ -100,6 +100,27 @@ func TestCreateBankHandler(t *testing.T) {
 		checkResponseCode(t, http.StatusBadRequest, rec.Code)
 	})
 
+	t.Run("swiftCode already exists in db", func(t *testing.T) {
+		// bank with this swiftCode already exists in db
+		payload := `{
+			"swiftCode": "ABCDEFGHXXX",
+			"address": "this bank already exists",
+			"bankName": "Headquarter bank US",
+			"countryISO2": "US",
+			"countryName": "United States",
+			"isHeadquarter": true
+		}`
+
+		req, err := http.NewRequest(http.MethodPost, app.config.apiVersion+"/swift-codes", strings.NewReader(payload))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		rec := executeRequest(req, mux)
+		checkResponseCode(t, http.StatusBadRequest, rec.Code)
+	})
+
 	t.Run("validation error missing required field", func(t *testing.T) {
 		// missing required bankName field
 		payload := `{

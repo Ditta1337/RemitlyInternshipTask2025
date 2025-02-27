@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:16.3
-    container_name: SWIFT-API-DB
+    container_name: SWIFT-API-POSTGRES
     environment:
       POSTGRES_DB: swift
       POSTGRES_USER: admin
@@ -11,6 +11,24 @@ services:
       - ./scripts/db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
     ports:
       - "5432:5432"
+
+  backend:
+    build: .
+    container_name: SWIFT-API
+    depends_on:
+      - db
+    environment:
+      ADDR: ":8080"
+      EXTERNAL_URL: "http://localhost:8080"
+      DB_ADDR: "postgres://admin:remitly2025@db:5432/swift?sslmode=disable"
+      DB_MAX_OPEN_CONNS: 30
+      DB_MAX_IDLE_CONNS: 30
+      DB_MAX_IDLE_TIME: "15m"
+      ENV: "production"
+      API_VERSION: "v1"
+      GOOSE_MIGRATION_DIR: "./cmd/migrations"
+    ports:
+      - "8080:8080"
 
 volumes:
   db-data:

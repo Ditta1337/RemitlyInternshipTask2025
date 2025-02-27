@@ -27,6 +27,7 @@ func (app *application) createBankHandler(w http.ResponseWriter, r *http.Request
 	var payload requests.BankPayload
 	if err := readJSON(w, r, &payload); err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	if err := Validate.Struct(payload); err != nil {
@@ -57,7 +58,12 @@ func (app *application) createBankHandler(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 
 	if err := app.store.Banks.Create(ctx, bank); err != nil {
-		app.internalServerError(w, r, err)
+		switch {
+		case errors.Is(err, store.ErrAlreadyExists):
+			app.badRequestResponse(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
 		return
 	}
 
@@ -84,6 +90,7 @@ func (app *application) getBankBySWIFTCodeHandler(w http.ResponseWriter, r *http
 	swiftCode, err := parseSwiftCode(r)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	ctx := r.Context()
@@ -133,6 +140,7 @@ func (app *application) getAllBanksByCountryISO2Handler(w http.ResponseWriter, r
 	countryISO := strings.ToUpper(chi.URLParam(r, "countryISO2code"))
 	if len(countryISO) != 2 {
 		app.badRequestResponse(w, r, errors.New("incorrect country ISO2 code length"))
+		return
 	}
 
 	ctx := r.Context()
@@ -178,6 +186,7 @@ func (app *application) deleteBankHandler(w http.ResponseWriter, r *http.Request
 	swiftCode, err := parseSwiftCode(r)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	ctx := r.Context()
@@ -189,6 +198,7 @@ func (app *application) deleteBankHandler(w http.ResponseWriter, r *http.Request
 		default:
 			app.internalServerError(w, r, err)
 		}
+		return
 	}
 
 	if err := app.writeJSONResponse(w, http.StatusOK, responses.Message{Message: "successfully deleted bank from database"}); err != nil {

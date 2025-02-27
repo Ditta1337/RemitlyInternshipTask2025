@@ -35,6 +35,12 @@ type MockBankStore struct {
 }
 
 func (m *MockBankStore) Create(ctx context.Context, bank *model.Bank) error {
+	for _, existingBank := range m.banks {
+		if existingBank.SWIFTCode == bank.SWIFTCode {
+			return ErrAlreadyExists
+		}
+	}
+
 	headquarterSwiftCode, err := m.findHeadquarterSwiftCode(ctx, bank.SWIFTCode)
 	if err != nil {
 		return err

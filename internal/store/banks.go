@@ -12,12 +12,23 @@ type BankStore struct {
 }
 
 func (s *BankStore) Create(ctx context.Context, bank *model.Bank) error {
+	existsQuery := "SELECT EXISTS (SELECT 1 FROM banks WHERE swiftCode = $1)"
+
+	var exists bool
+	err := s.db.QueryRowContext(ctx, existsQuery, bank.SWIFTCode).Scan(&exists)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return ErrAlreadyExists
+	}
+
 	headquarterSwiftCode, err := s.findHeadquarterSwiftCode(ctx, bank.SWIFTCode)
 	if err != nil {
 		return err
 	}
 
-	query := `
+	insertQuery := `
 		INSERT INTO banks (swiftCode, address, bankName, countryISO2, countryName, isHeadquarter, headquarterSwiftCode)
 		values ($1, $2, $3, $4, $5, $6, $7)
 	`
@@ -27,7 +38,7 @@ func (s *BankStore) Create(ctx context.Context, bank *model.Bank) error {
 
 	_, err = s.db.ExecContext(
 		ctx,
-		query,
+		insertQuery,
 		bank.SWIFTCode,
 		bank.Address,
 		bank.BankName,

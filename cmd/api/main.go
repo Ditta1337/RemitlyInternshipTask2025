@@ -4,12 +4,10 @@ import (
 	dbPkg "github.com/Ditta1337/RemitlyInternshipTask2025/internal/db"
 	"github.com/Ditta1337/RemitlyInternshipTask2025/internal/env"
 	storePkg "github.com/Ditta1337/RemitlyInternshipTask2025/internal/store"
-	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 const version = "0.0.1"
@@ -26,7 +24,7 @@ func main() {
 
 	// loading .env
 	if err := godotenv.Load(); err != nil {
-		logger.Fatalf("error loading .env file: %s", err.Error())
+		logger.Warnf("error loading .env file: %s", err.Error())
 	}
 
 	cfg := config{
@@ -66,6 +64,8 @@ func main() {
 	// seed db if its empty
 	if err := dbPkg.SeedDBIfEmpty(db, store); err != nil {
 		logger.Infof("failed to seed db: %s", err.Error())
+	} else {
+		logger.Info("finished seeding db")
 	}
 
 	app := &application{
@@ -75,13 +75,6 @@ func main() {
 	}
 
 	mux := app.mount()
-
-	if err := chi.Walk(mux, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		logger.Infof("%s %s\n", method, route)
-		return nil
-	}); err != nil {
-		logger.Infof("failed to walk routes: %s", err)
-	}
 
 	logger.Fatal(app.run(mux))
 }

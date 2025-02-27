@@ -1,0 +1,188 @@
+definitions:
+  requests.BankPayload:
+    properties:
+      address:
+        maxLength: 255
+        type: string
+      bankName:
+        maxLength: 255
+        type: string
+      countryISO2:
+        type: string
+      countryName:
+        maxLength: 255
+        type: string
+      isHeadquarter:
+        type: boolean
+      swiftCode:
+        type: string
+    required:
+    - bankName
+    - countryISO2
+    - countryName
+    - isHeadquarter
+    - swiftCode
+    type: object
+  responses.AllBanks:
+    properties:
+      countryISO2:
+        type: string
+      countryName:
+        type: string
+      swiftCodes:
+        items:
+          $ref: '#/definitions/responses.BankShort'
+        type: array
+    type: object
+  responses.BankShort:
+    properties:
+      address:
+        type: string
+      countryISO2:
+        type: string
+      countryName:
+        type: string
+      isHeadquarter:
+        type: boolean
+      swiftCode:
+        type: string
+    type: object
+  responses.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  responses.Message:
+    properties:
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Remitly 2025 internship task
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Remitly SWIFT API 2025
+paths:
+  /swift-codes:
+    post:
+      consumes:
+      - application/json
+      description: Creates a bank
+      parameters:
+      - description: Bank payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/requests.BankPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/responses.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Creates a bank
+      tags:
+      - banks
+  /swift-codes/{swift-code}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a bank by SWIFT code
+      parameters:
+      - description: SWIFT Code
+        in: path
+        name: swift-code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Deletes a bank by SWIFT code
+      tags:
+      - banks
+    get:
+      consumes:
+      - application/json
+      description: Gets a bank by SWIFT code
+      parameters:
+      - description: SWIFT Code
+        in: path
+        name: swift-code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns either a BankHeadquarter or BankBranch. See the API
+            documentation for details.
+          schema: {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Gets a bank by SWIFT code
+      tags:
+      - banks
+  /swift-codes/country/{countryISO2code}:
+    get:
+      consumes:
+      - application/json
+      description: Gets all banks with given Country ISO2 Code
+      parameters:
+      - description: Country ISO2 Code
+        in: path
+        name: countryISO2code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.AllBanks'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.Error'
+      summary: Gets all banks with given Country ISO2 Code
+      tags:
+      - banks
+swagger: "2.0"
