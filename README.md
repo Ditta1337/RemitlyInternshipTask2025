@@ -5,6 +5,7 @@
 Make sure you have Docker installed:
 
 - [Docker](https://docs.docker.com/get-docker/)
+- [Go 1.24.0 (Required for tests)](https://go.dev/dl/)
 
 ## How to run
 
