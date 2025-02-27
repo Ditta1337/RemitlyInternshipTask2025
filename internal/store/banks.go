@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/Ditta1337/RemitlyInternshipTask2025/internal/model"
 )
 
@@ -39,6 +40,7 @@ func (s *BankStore) Create(ctx context.Context, bank *model.Bank) error {
 	return err
 }
 
+// checks if headquarter of bank already exists in db
 func (s *BankStore) findHeadquarterSwiftCode(ctx context.Context, swiftCode string) (*string, error) {
 	swiftCodeToFind := swiftCode[:8] + "XXX"
 
@@ -51,7 +53,7 @@ func (s *BankStore) findHeadquarterSwiftCode(ctx context.Context, swiftCode stri
 	var foundSwiftCode string
 	err := s.db.QueryRowContext(ctx, query, swiftCodeToFind).Scan(&foundSwiftCode)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err

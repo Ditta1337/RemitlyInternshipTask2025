@@ -41,7 +41,7 @@ func (app *application) createBankHandler(w http.ResponseWriter, r *http.Request
 		address = &payload.Address
 	}
 
-	if payload.IsHeadquarter && payload.SWIFTCode[8:] != "XXX" {
+	if *payload.IsHeadquarter && payload.SWIFTCode[8:] != "XXX" {
 		app.badRequestResponse(w, r, errors.New("isHeadquarters set to true, while swift code says otherwise"))
 	}
 
@@ -51,7 +51,7 @@ func (app *application) createBankHandler(w http.ResponseWriter, r *http.Request
 		BankName:      payload.BankName,
 		CountryISO2:   payload.CountryISO2,
 		CountryName:   payload.CountryName,
-		IsHeadquarter: payload.IsHeadquarter,
+		IsHeadquarter: *payload.IsHeadquarter,
 	}
 
 	ctx := r.Context()
