@@ -125,19 +125,20 @@ Make sure you have Docker installed:
 - `DELETE /v1/swift-codes/{swift-code}`
     - Removes bank from the database
 
-- (ADDITIONAL) `GET /v1/swagger/*`
+#### (ADDITIONAL) Swagger
+- `GET /v1/swagger/*`
     - Swagger documentation for the API
 
 ## Environment variables
 The app uses the following environment variables (defined in docker-compose.yaml):
 
-| Variable          | Default Value                                           | Description |
-|------------------|---------------------------------------------------------|-------------|
-| `ADDR`          | `:8080`                                                 | API listen address |
-| `EXTERNAL_URL`  | `http://localhost:8080`                                 | Public-facing API URL |
-| `DB_ADDR`       | `postgres://admin:remitly2025@db/swift?sslmode=disable` | Database connection string |
-| `DB_MAX_OPEN_CONNS` | `30`                                                    | Max open DB connections |
-| `DB_MAX_IDLE_CONNS` | `30`                                                    | Max idle DB connections |
-| `DB_MAX_IDLE_TIME`  | `15m`                                                   | Max idle time for DB connections |
+| Variable          | Default Value                                           | Description                                     |
+|------------------|---------------------------------------------------------|-------------------------------------------------|
+| `ADDR`          | `:8080`                                                 | API listen port                                 |
+| `EXTERNAL_URL`  | `http://localhost:8080`                                 | Public-facing API URL                           |
+| `DB_ADDR`       | `postgres://admin:remitly2025@db/swift?sslmode=disable` | Database connection string                      |
+| `DB_MAX_OPEN_CONNS` | `30`                                                    | Max open DB connections                         |
+| `DB_MAX_IDLE_CONNS` | `30`                                                    | Max idle DB connections                         |
+| `DB_MAX_IDLE_TIME`  | `15m`                                                   | Max idle time for DB connections                |
 | `ENV`          | `production`                                            | App environment (`development` or `production`) |
-| `API_VERSION`  | `v1`                                                    | API version |
+| `API_VERSION`  | `v1`                                                    | API version                                     |
